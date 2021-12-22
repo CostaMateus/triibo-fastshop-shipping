@@ -17,7 +17,8 @@ class WC_Triibo_Fastshop_Shipping
 	/**
 	 * Initialize the plugin public actions.
 	 */
-	public static function init() {
+	public static function init()
+	{
 		// add_action( "init", array( __CLASS__, "load_plugin_textdomain" ), -1 );
 
         self::includes();
@@ -43,7 +44,8 @@ class WC_Triibo_Fastshop_Shipping
 	private static function includes()
     {
         include_once dirname( __FILE__ ) . "/shipping/class-wc-fastshop-shipping.php";
-		include_once dirname( __FILE__ ) . '/class-wc-triibo-webservice.php';
+		include_once dirname( __FILE__ ) . "/class-wc-triibo-fastshop-cart.php";
+		include_once dirname( __FILE__ ) . "/class-wc-triibo-webservice.php";
     }
 
 	/**

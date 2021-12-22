@@ -3,8 +3,8 @@
  * Triibo Fastshop Shipping.
  *
  * @package Triibo_Fastshop_Shipping/Classes/Shipping
- * @since   3.0.0
- * @version 3.0.0
+ * @since   1.0.0
+ * @version 1.0.0
  */
 
 if ( ! defined( "ABSPATH" ) ) exit;
@@ -23,12 +23,12 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     {
         $this->instance_id        = absint( $instance_id );
 
-        $this->id                 = "fastshop-shipping";            // Id for your shipping method. Should be uunique.
-        $this->method_title       = __( "Fast Shop" );              // Title shown in admin
-        $this->method_description = __( "Entrega feita Fast Shop" ); // Description shown in admin
+        $this->id                 = "fastshop-shipping";                  // Id for your shipping method. Should be uunique.
+        $this->method_title       = __( "Fast Shop" );                    // Title shown in admin
+        $this->method_description = __( "Entrega feita pela Fast Shop" ); // Description shown in admin
 
-        $this->enabled            = "yes";                                       // This can be added as an setting but for this example its forced enabled
-        $this->title              = "My Shipping Method";                        // This can be added as an setting but for this example its forced.
+        $this->enabled            = "yes";                                // This can be added as an setting but for this example its forced enabled
+        $this->title              = "Fast Shop";                          // This can be added as an setting but for this example its forced.
 
         $this->supports           = array(
             "shipping-zones",
@@ -113,7 +113,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                 "placeholder" => "0",
             ),
             // "fee"                => array(
-            //     "title"       => __( "Taxa de manuseio" ),
+            //     "title"       => __( "Taxa extra de envio" ),
             //     "type"        => "price",
             //     "description" => __( "Digite um valor, por exemplo: 2.50, ou uma porcentagem, por exemplo, 5%. Deixe em branco para desabilitar." ),
             //     "desc_tip"    => true,
@@ -132,11 +132,12 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     {
         $shipping_classes = WC()->shipping->get_shipping_classes();
         $options          = array(
-            "-1" => __( "Any Shipping Class" ),
-            "0"  => __( "No Shipping Class" ),
-            );
+            "-1" => __( "Qualquer classe" ),
+            "0"  => __( "Nenhuma classe" ),
+        );
 
-        if ( !empty( $shipping_classes ) ) {
+        if ( !empty( $shipping_classes ) )
+        {
             $options += wp_list_pluck( $shipping_classes, "name", "term_id" );
         }
 
@@ -185,9 +186,6 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
      */
     public function calculate_shipping( $package = array() )
     {
-        // $nl = PHP_EOL . "==========================" . PHP_EOL . "Return calculate_shipping" . PHP_EOL . date("Y-m-d H:i:s") . PHP_EOL;
-        // file_put_contents( plugin_dir_path( __FILE__ ) . "log.txt", $nl . json_encode($package), FILE_APPEND );
-
         // Check if valid to be calculeted
         if ( "" === $package["destination"]["postcode"] || "BR" !== $package["destination"]["country"] )
         {
@@ -210,68 +208,46 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
         // executa a consulta a api
         $shipping = $this->get_rate( $package );
 
-
-
-        // if ( ! isset( $shipping->Erro ) )
-        // { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar
-        //     return;
-        // }
-
-        // $error_number = (string) $shipping->Erro; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar
-
-        // // Exit if have errors.
-        // if ( ! in_array( $error_number, $this->get_accepted_error_codes(), true ) )
-        // {
-        //     return;
-        // }
-
-        // // Display Correios errors.
-        // $error_message = wc_correios_get_error_message( $error_number );
-        // if ( "" !== $error_message && is_cart() )
-        // {
-        //     $notice_type = ( "010" === $error_number ) ? "notice" : "error";
-        //     $notice      = "<strong>" . $this->title . ":</strong> " . esc_html( $error_message );
-        //     wc_add_notice( $notice, $notice_type );
-        // }
-
-        // // Set the shipping rates.
-        // $cost  = $shipping->Valor;
-        $cost  = "12.99";
-
-        // Exit if don"t have price.
-        if ( 0 === intval( $cost ) )
+        if ($shipping["errorCode"])
         {
+            $nl = PHP_EOL . "==========================" . PHP_EOL . "Return calculate_shipping" . PHP_EOL . date("Y-m-d H:i:s") . PHP_EOL;
+            file_put_contents( plugin_dir_path( WC_TRIIBO_FASTSHOP_PLUGIN_FILE ) . "shipping.log", $nl . json_encode($shipping), FILE_APPEND );
             return;
         }
 
-        // Display delivery.
-        $meta_delivery = array();
-        if ( "yes" === $this->show_delivery_time )
+        foreach ($shipping["data"] as $s)
         {
-            $meta_delivery = array(
-                // "_delivery_forecast" => intval( $shipping->PrazoEntrega ) + intval( $this->additional_time ),
-                "_delivery_forecast" => intval( 10 ) + intval( $this->additional_time ),
-            );
+            $cost = $s["deliveryPrice"];
+
+            // // Exit if don't have price
+            // if ( 0 === intval( $cost ) ) return;
+            //
+            // // Apply fees.
+            // $aux_cost = ( intval( $cost ) < 10 ) ? 10 : $cost;
+            // $fee      = $this->get_fee( $this->fee, $aux_cost );
+            // $cost     = (float) $cost + (float) $fee;
+
+            // Display delivery
+            $meta_delivery = [];
+            if ( "yes" === $this->show_delivery_time )
+            {
+                $meta_delivery = [
+                    "_delivery_forecast" => intval( $s["deliveryTime"] ) + intval( $this->additional_time ),
+                ];
+            }
+
+            // Create the rate
+            $rate = [
+                "id"             => $this->id . $this->instance_id,
+                "label"          => $this->title,
+                "cost"           => (float) $cost,
+                "calc_tax"       => "per_item",
+                "meta_data"      => $meta_delivery,
+            ];
+
+            // Register the rate
+            $this->add_rate( $rate );
         }
-
-        // Create the rate.
-        $rate = array(
-            "id"        => $this->id . $this->instance_id,
-            "label"     => $this->title,
-            "cost"      => (float) $cost,
-            "calc_tax"  => "per_item",
-            "meta_data" => $meta_delivery,
-
-            // 'id'             => $this->get_rate_id(), // ID for the rate. If not passed, this id:instance default will be used.
-            // 'label'          => '', // Label for the rate.
-            // 'cost'           => '0', // Amount or array of costs (per item shipping).
-            // 'calc_tax'       => 'per_order', // Calc tax per_order or per_item. Per item needs an array of costs.
-            // 'meta_data'      => array(), // Array of misc meta data to store along with this rate - key value pairs.
-            // 'price_decimals' => wc_get_price_decimals(),
-        );
-
-        // Register the rate
-        $this->add_rate( $rate );
     }
 
 
@@ -287,10 +263,6 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 		$api      = new WC_Triibo_Webservice( $package );
 		$shipping = $api->get_shipping();
 
-        $nl = PHP_EOL . "==========================" . PHP_EOL . "Return get_rate" . PHP_EOL . date("Y-m-d H:i:s") . PHP_EOL;
-        file_put_contents( plugin_dir_path( __FILE__ ) . "log.txt", $nl . json_encode($shipping), FILE_APPEND );
-
 		return $shipping;
 	}
-
 }
