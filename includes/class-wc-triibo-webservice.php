@@ -98,7 +98,7 @@ class WC_Triibo_Webservice
         $ch  = curl_init();
 
 		curl_setopt_array( $ch, [
-			CURLOPT_URL            => "$url/api/marketplace/freightcalculation",
+			CURLOPT_URL            => "$url/api/marketplace/wc/freightcalculation",
 			CURLOPT_RETURNTRANSFER => TRUE,
 			CURLOPT_ENCODING       => "",
 			CURLOPT_MAXREDIRS      => 10,
@@ -116,5 +116,31 @@ class WC_Triibo_Webservice
         curl_close( $ch );
 
         return json_decode( $response, TRUE );
+    }
+
+    public function update_stock()
+    {
+        $url = ($this->_local_env) ? $this->_api_url_hml : $this->_api_url;
+
+        $sku = $this->body["items"][0]["sku"];
+
+        $ch  = curl_init();
+
+		curl_setopt_array( $ch, [
+			CURLOPT_URL            => "$url/api/marketplace/wc/updatesku/$sku",
+			CURLOPT_RETURNTRANSFER => TRUE,
+			CURLOPT_ENCODING       => "",
+			CURLOPT_MAXREDIRS      => 10,
+			CURLOPT_TIMEOUT        => 10,
+            CURLOPT_FOLLOWLOCATION => true,
+			// CURLOPT_SSL_VERIFYHOST => FALSE,
+			// CURLOPT_SSL_VERIFYPEER => FALSE,
+			CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST  => "POST",
+			CURLOPT_HTTPHEADER     => $this->header,
+        ]);
+
+        curl_exec( $ch );
+        curl_close( $ch );
     }
 }
