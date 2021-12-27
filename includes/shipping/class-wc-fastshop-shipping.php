@@ -263,6 +263,11 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 		$api      = new WC_Triibo_Webservice( $package );
 		$shipping = $api->get_shipping();
 
+        if ($shipping["errorCode"])
+        {
+            $api->update_stock();
+        }
+
 		return $shipping;
 	}
 }
