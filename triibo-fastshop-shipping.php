@@ -1,8 +1,7 @@
 <?php
 /**
  * Plugin Name:          #Triibo_Fastshop_Shipping
- * Plugin URI:           https://github.com/claudiosanches/woocommerce-correios
- * Description:          Triibo Frete Teste - WooCommerce e WooCommerce-Correios
+ * Description:          Triibo Fast Shop Frete - WooCommerce e WooCommerce-Correios
  * Author:               Mateus Costa
  * Version:              1.0.0
  * Text Domain:          triibo-fastshop-shipping
