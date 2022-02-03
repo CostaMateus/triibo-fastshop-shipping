@@ -3,7 +3,8 @@
  * Plugin Name:          #Triibo_Fastshop_Shipping
  * Description:          Triibo Fast Shop Frete - WooCommerce e WooCommerce-Correios
  * Author:               Mateus Costa
- * Version:              1.1.0
+ * Author URI:           https://costamateus.com.br/
+ * Version:              1.1.1
  * Text Domain:          triibo-fastshop-shipping
  * WC requires at least: 3.6
  * WC tested up to:      5.8
