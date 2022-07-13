@@ -14,7 +14,6 @@ if ( ! defined( "ABSPATH" ) ) exit;
  */
 class WC_Triibo_Webservice
 {
-
     private $_local_env     = true;
 
     private $_api_url_hml   = "http://php-hml.triibo.com.br";           // HOMOLOG
@@ -22,8 +21,8 @@ class WC_Triibo_Webservice
     private $_api_token_hml = "7472216240776562417070486d4c6170693139"; // HOMOLOG
 
     private $_api_url       = "http://php.triibo.com.br";               // PROD
-    private $_api_key       = ""; // PROD
-    private $_api_token     = ""; // PROD
+    private $_api_key       = "fastshopappkey-triibo-AQPPTC";           // PROD
+    private $_api_token     = "50083473200638420676844774754275516748"; // PROD
 
 	protected $package      = null;
 
