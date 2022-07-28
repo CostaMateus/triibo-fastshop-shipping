@@ -48,8 +48,8 @@ class WC_Triibo_Webservice
      */
     private function get_headers()
     {
-        $key   = ($this->_local_env) ? $this->_api_key_hml   : $this->_api_key;
-        $token = ($this->_local_env) ? $this->_api_token_hml : $this->_api_token;
+        $key   = ( $this->_local_env ) ? $this->_api_key_hml   : $this->_api_key;
+        $token = ( $this->_local_env ) ? $this->_api_token_hml : $this->_api_token;
 
         $this->header = [
             "Accept: application/json",
@@ -66,12 +66,12 @@ class WC_Triibo_Webservice
 	 */
 	private function process_package()
     {
-        $postalCode = $this->package["destination"]["postcode"];
+        $postalCode = $this->package[ "destination" ][ "postcode" ];
         $items      = [];
 
-        foreach ($this->package["contents"] as $content)
+        foreach ( $this->package[ "contents" ] as $content )
         {
-            $product = wc_get_product( $content["product_id"] );
+            $product = wc_get_product( $content[ "product_id" ] );
 
             $items[] = [
                 "sku"      => $product->get_sku(),
@@ -92,7 +92,7 @@ class WC_Triibo_Webservice
 	 */
 	public function get_shipping()
     {
-        $url = ($this->_local_env) ? $this->_api_url_hml : $this->_api_url;
+        $url = ( $this->_local_env ) ? $this->_api_url_hml : $this->_api_url;
 
         $ch  = curl_init();
 
@@ -120,26 +120,27 @@ class WC_Triibo_Webservice
     public function update_stock()
     {
         $url = ($this->_local_env) ? $this->_api_url_hml : $this->_api_url;
-
-        $sku = $this->body["items"][0]["sku"];
-
         $ch  = curl_init();
 
-		curl_setopt_array( $ch, [
-			CURLOPT_URL            => "$url/api/marketplace/wc/updatesku/$sku",
-			CURLOPT_RETURNTRANSFER => TRUE,
-			CURLOPT_ENCODING       => "",
-			CURLOPT_MAXREDIRS      => 10,
-			CURLOPT_TIMEOUT        => 10,
-            CURLOPT_FOLLOWLOCATION => true,
-			// CURLOPT_SSL_VERIFYHOST => FALSE,
-			// CURLOPT_SSL_VERIFYPEER => FALSE,
-			CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST  => "POST",
-			CURLOPT_HTTPHEADER     => $this->header,
-        ]);
+        foreach ( $this->body[ "items" ] as $item )
+        {
+            $sku = $item[ "sku" ];
 
-        curl_exec( $ch );
+            curl_setopt_array( $ch, [
+                CURLOPT_URL            => "$url/api/marketplace/wc/updatesku/$sku",
+                CURLOPT_RETURNTRANSFER => TRUE,
+                CURLOPT_ENCODING       => "",
+                CURLOPT_MAXREDIRS      => 10,
+                CURLOPT_TIMEOUT        => 10,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST  => "POST",
+                CURLOPT_HTTPHEADER     => $this->header,
+            ]);
+
+            curl_exec( $ch );
+        }
+
         curl_close( $ch );
     }
 }
