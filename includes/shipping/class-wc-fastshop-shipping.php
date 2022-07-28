@@ -136,10 +136,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             "0"  => __( "Nenhuma classe" ),
         );
 
-        if ( !empty( $shipping_classes ) )
-        {
-            $options += wp_list_pluck( $shipping_classes, "name", "term_id" );
-        }
+        if ( !empty( $shipping_classes ) ) $options += wp_list_pluck( $shipping_classes, "name", "term_id" );
 
         return $options;
     }
@@ -154,15 +151,12 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     {
         $only_selected = true;
 
-        if ( -1 === $this->shipping_class_id )
-        {
-            return $only_selected;
-        }
+        if ( -1 === $this->shipping_class_id ) return $only_selected;
 
-        foreach ( $package["contents"] as $item_id => $values )
+        foreach ( $package[ "contents" ] as $item_id => $values )
         {
-            $product = $values["data"];
-            $qty     = $values["quantity"];
+            $product = $values[ "data" ];
+            $qty     = $values[ "quantity" ];
 
             if ( $qty > 0 && $product->needs_shipping() )
             {
@@ -187,67 +181,58 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     public function calculate_shipping( $package = array() )
     {
         // Check if valid to be calculeted
-        if ( "" === $package["destination"]["postcode"] || "BR" !== $package["destination"]["country"] )
-        {
-            return;
-        }
+        if ( "" === $package[ "destination" ][ "postcode" ] || "BR" !== $package[ "destination" ][ "country" ] ) return;
 
         // Check if complete postcode
-        $postcode = strlen($package["destination"]["postcode"]);
-        if ( $postcode < 8 || $postcode > 9 )
-        {
-            return;
-        }
+        $postcode = strlen($package[ "destination" ][ "postcode" ] );
+        if ( $postcode < 8 || $postcode > 9 ) return;
 
         // Check for shipping classes.
-        if ( ! $this->has_only_selected_shipping_class( $package ) )
-        {
-            return;
-        }
+        if ( ! $this->has_only_selected_shipping_class( $package ) ) return;
 
         // executa a consulta a api
         $shipping = $this->get_rate( $package );
 
-        if ($shipping["errorCode"])
+        if ( $shipping[ "errorCode" ] )
         {
-            $nl = PHP_EOL . "==========================" . PHP_EOL . "Return calculate_shipping" . PHP_EOL . date("Y-m-d H:i:s") . PHP_EOL;
-            file_put_contents( plugin_dir_path( WC_TRIIBO_FASTSHOP_PLUGIN_FILE ) . "shipping.log", $nl . json_encode($shipping), FILE_APPEND );
+            $nl   = PHP_EOL . "==========================" .
+                    PHP_EOL . "Return calculate_shipping"  .
+                    PHP_EOL . date( "Y-m-d H:i:s" )        . PHP_EOL;
+            $path = plugin_dir_path( WC_TRIIBO_FASTSHOP_PLUGIN_FILE ) . "shipping.log";
+            $data = $nl . json_encode( $shipping );
+            file_put_contents( $path, $data, FILE_APPEND );
             return;
         }
 
-        foreach ($shipping["data"] as $s)
+        $cost = 0;
+        $time = 0;
+
+        foreach ( $shipping[ "data" ] as $s )
         {
-            $cost = $s["deliveryPrice"];
-
-            // // Exit if don't have price
-            // if ( 0 === intval( $cost ) ) return;
-            //
-            // // Apply fees.
-            // $aux_cost = ( intval( $cost ) < 10 ) ? 10 : $cost;
-            // $fee      = $this->get_fee( $this->fee, $aux_cost );
-            // $cost     = (float) $cost + (float) $fee;
-
-            // Display delivery
-            $meta_delivery = [];
-            if ( "yes" === $this->show_delivery_time )
-            {
-                $meta_delivery = [
-                    "_delivery_forecast" => intval( $s["deliveryTime"] ) + intval( $this->additional_time ),
-                ];
-            }
-
-            // Create the rate
-            $rate = [
-                "id"             => $this->id . $this->instance_id,
-                "label"          => $this->title,
-                "cost"           => (float) $cost,
-                "calc_tax"       => "per_item",
-                "meta_data"      => $meta_delivery,
-            ];
-
-            // Register the rate
-            $this->add_rate( $rate );
+            $cost += $s[ "deliveryPrice" ];
+            $time  = ( $s[ "deliveryTime" ] > $time ) ? $s[ "deliveryTime" ] : $time;
         }
+
+        // Display delivery
+        $meta_delivery = [];
+        if ( "yes" === $this->show_delivery_time )
+        {
+            $meta_delivery = [
+                "_delivery_forecast" => intval( $time ) + intval( $this->additional_time ),
+            ];
+        }
+
+        // Create the rate
+        $rate = [
+            "id"             => $this->id . $this->instance_id,
+            "label"          => $this->title,
+            "cost"           => (float) $cost,
+            "calc_tax"       => "per_item",
+            "meta_data"      => $meta_delivery,
+        ];
+
+        // Register the rate
+        $this->add_rate( $rate );
     }
 
 
@@ -263,10 +248,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 		$api      = new WC_Triibo_Webservice( $package );
 		$shipping = $api->get_shipping();
 
-        if ($shipping["errorCode"])
-        {
-            $api->update_stock();
-        }
+        $api->update_stock();
 
 		return $shipping;
 	}
