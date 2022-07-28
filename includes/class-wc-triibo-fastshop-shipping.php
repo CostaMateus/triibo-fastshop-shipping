@@ -65,7 +65,7 @@ class WC_Triibo_Fastshop_Shipping
 	 */
 	public static function include_methods( $methods )
     {
-        $methods["fastshop-shipping"] = "WC_Fastshop_Shipping";
+        $methods[ "fastshop-shipping" ] = "WC_Fastshop_Shipping";
 
         return $methods;
     }

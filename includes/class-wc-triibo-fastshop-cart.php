@@ -31,7 +31,7 @@ class WC_Triibo_Fastshop_Cart
 	public function shipping_delivery_forecast( $shipping_method )
 	{
 		$meta_data = $shipping_method->get_meta_data();
-		$total     = isset( $meta_data["_delivery_forecast"] ) ? intval( $meta_data["_delivery_forecast"] ) : 0;
+		$total     = isset( $meta_data[ "_delivery_forecast" ] ) ? intval( $meta_data[ "_delivery_forecast" ] ) : 0;
 
 		if ( $total )
 		{
