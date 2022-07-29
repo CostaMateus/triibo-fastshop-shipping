@@ -248,7 +248,41 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 		$api      = new WC_Triibo_Webservice( $package );
 		$shipping = $api->get_shipping();
 
-        $api->update_stock();
+        $code     = $shipping[ "errorCode" ];
+
+        if ( is_null( $code ) || $code == "4001" )
+        {
+            foreach ( $shipping[ "data" ] as $item )
+            {
+                $status  = $item[ "availableQuantity" ] ? "instock" : "outofstock";
+                $stock   = $item[ "stock" ];
+                $regular = $item[ "regular_price" ];
+                $sale    = $item[ "sale_price" ];
+                $sku     = $item[ "sku" ];
+
+                $id      = wc_get_product_id_by_sku( $sku );
+                $product = wc_get_product( $id );
+
+                $product->set_stock_quantity( $stock );
+                $product->set_regular_price( $regular );
+                $product->set_sale_price( $sale );
+                $product->set_stock_status( $status );
+                $product->save();
+            }
+        }
+        else if ( $code == "4002" )
+        {
+            foreach ( $shipping[ "data" ] as $item )
+            {
+                $sku     = $item[ "sku" ];
+                $id      = wc_get_product_id_by_sku( $sku );
+                $product = wc_get_product( $id );
+
+                $product->set_stock_quantity( 0 );
+                $product->set_stock_status( "outofstock" );
+                $product->save();
+            }
+        }
 
 		return $shipping;
 	}
