@@ -14,20 +14,20 @@ if ( ! defined( "ABSPATH" ) ) exit;
  */
 class WC_Triibo_Webservice
 {
-    private $_local_env     = true;
+    const _api_url_hml   = "http://php-hml.triibo.com.br";           // HOMOLOG
+    const _api_key_hml   = "fastshopappkey-triibo-AQPPTC";           // HOMOLOG
+    const _api_token_hml = "7472216240776562417070486d4c6170693139"; // HOMOLOG
 
-    private $_api_url_hml   = "http://php-hml.triibo.com.br";           // HOMOLOG
-    private $_api_key_hml   = "fastshopappkey-triibo-AQPPTC";           // HOMOLOG
-    private $_api_token_hml = "7472216240776562417070486d4c6170693139"; // HOMOLOG
+    const _api_url       = "http://php.triibo.com.br";               // PROD
+    const _api_key       = "fastshopappkey-triibo-AQPPTC";           // PROD
+    const _api_token     = "50083473200638420676844774754275516748"; // PROD
 
-    private $_api_url       = "http://php.triibo.com.br";               // PROD
-    private $_api_key       = "fastshopappkey-triibo-AQPPTC";           // PROD
-    private $_api_token     = "50083473200638420676844774754275516748"; // PROD
+    private $url         = null;
 
-	protected $package      = null;
+	protected $package   = null;
 
-    private $header         = null;
-    private $body           = null;
+    private $header      = null;
+    private $body        = null;
 
 	/**
 	 * Initialize webservice.
@@ -36,28 +36,23 @@ class WC_Triibo_Webservice
 	 */
 	public function __construct( $package = array() )
     {
-		$this->package = $package;
-        $this->get_headers();
-        $this->process_package();
-	}
+        $_local_env    = ( strpos( home_url(), "dev-" ) !== FALSE ) ? true : false;
 
-    /**
-     * Headers request
-     *
-     * @return array
-     */
-    private function get_headers()
-    {
-        $key   = ( $this->_local_env ) ? $this->_api_key_hml   : $this->_api_key;
-        $token = ( $this->_local_env ) ? $this->_api_token_hml : $this->_api_token;
+        $key           = $_local_env ? self::_api_key_hml   : self::_api_key;
+        $token         = $_local_env ? self::_api_token_hml : self::_api_token;
+        $this->url     = $_local_env ? self::_api_url_hml   : self::_api_url;
 
-        $this->header = [
+        $this->package = $package;
+
+        $this->header  = [
             "Accept: application/json",
             "Content-Type: application/json",
             "api-key: $key",
             "api-token: $token",
         ];
-    }
+
+        $this->process_package();
+	}
 
 	/**
 	 * Process the package
@@ -92,12 +87,12 @@ class WC_Triibo_Webservice
 	 */
 	public function get_shipping()
     {
-        $url = ( $this->_local_env ) ? $this->_api_url_hml : $this->_api_url;
+        $url = $this->url . "/api/marketplace/wc/freightcalculation";
 
         $ch  = curl_init();
 
 		curl_setopt_array( $ch, [
-			CURLOPT_URL            => "$url/api/marketplace/wc/freightcalculation",
+			CURLOPT_URL            => $url,
 			CURLOPT_RETURNTRANSFER => TRUE,
 			CURLOPT_ENCODING       => "",
 			CURLOPT_MAXREDIRS      => 10,
@@ -117,15 +112,16 @@ class WC_Triibo_Webservice
 
     public function update_stock()
     {
-        $url = ($this->_local_env) ? $this->_api_url_hml : $this->_api_url;
         $ch  = curl_init();
 
         foreach ( $this->body[ "items" ] as $item )
         {
             $sku = $item[ "sku" ];
 
+            $url = $this->url . "/api/marketplace/wc/updatesku/$sku";
+
             curl_setopt_array( $ch, [
-                CURLOPT_URL            => "$url/api/marketplace/wc/updatesku/$sku",
+                CURLOPT_URL            => $url,
                 CURLOPT_RETURNTRANSFER => TRUE,
                 CURLOPT_ENCODING       => "",
                 CURLOPT_MAXREDIRS      => 10,
