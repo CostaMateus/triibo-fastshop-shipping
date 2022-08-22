@@ -42,6 +42,8 @@ class WC_Triibo_Webservice
         $token         = $_local_env ? self::_api_token_hml : self::_api_token;
         $this->url     = $_local_env ? self::_api_url_hml   : self::_api_url;
 
+        $this->env     = $_local_env ? "dev" : "prod";
+
         $this->package = $package;
 
         $this->header  = [
@@ -53,6 +55,11 @@ class WC_Triibo_Webservice
 
         $this->process_package();
 	}
+
+    public function get_env()
+    {
+        return $this->env;
+    }
 
 	/**
 	 * Process the package
