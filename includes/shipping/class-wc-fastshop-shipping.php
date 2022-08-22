@@ -195,12 +195,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
         if ( $shipping[ "errorCode" ] )
         {
-            $nl   = PHP_EOL . "==========================" .
-                    PHP_EOL . "Return calculate_shipping"  .
-                    PHP_EOL . date( "Y-m-d H:i:s" )        . PHP_EOL;
-            $path = plugin_dir_path( WC_TRIIBO_FASTSHOP_PLUGIN_FILE ) . "shipping.log";
-            $data = $nl . json_encode( $shipping );
-            file_put_contents( $path, $data, FILE_APPEND );
+            self::log( "calculate_shipping_error", $shipping );
             return;
         }
 
@@ -231,6 +226,8 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             "meta_data"      => $meta_delivery,
         ];
 
+        self::log( "calculate_shipping_rate", $rate );
+
         // Register the rate
         $this->add_rate( $rate );
     }
@@ -247,6 +244,8 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     {
 		$api      = new WC_Triibo_Webservice( $package );
 		$shipping = $api->get_shipping();
+
+        self::log( "get_rate", $shipping );
 
         $code     = $shipping[ "errorCode" ];
 
