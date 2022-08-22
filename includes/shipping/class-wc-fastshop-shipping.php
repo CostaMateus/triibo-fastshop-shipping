@@ -264,26 +264,17 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             $code    = $data[ "code" ];
             $item    = $data[ "data" ];
 
-            $hub     = null;
-            $class   = null;
-            $stock   = null;
-            $status  = null;
-            $rPrice  = null;
-            $sPrice  = null;
-
-            /**
-             * fast-shop    == 3970
-             * fast-shop-05 == 4309
-             * fast-shop-14 == 4310
-             * fast-shop-33 == 4311
-             */
+            $fs_     = $api->get_env() ? 4453 : 3970;
+            $fs_05   = $api->get_env() ? 4454 : 4309;
+            $fs_14   = $api->get_env() ? 4451 : 4310;
+            $fs_33   = $api->get_env() ? 4345 : 4311;
 
             if ( in_array( $code, [ 4001, 4002 ] ) )
             {
                 $product->set_stock_quantity( 0 );
                 $product->set_stock_status( "outofstock" );
                 $product->update_meta_data( "_fastshop_hub", "-" );
-                $product->set_shipping_class_id( 3970 );
+                $product->set_shipping_class_id( $fs_ );
             }
             else if ( $code == 4000 )
             {
@@ -294,7 +285,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                 $product->set_stock_status( $status );
 
                 $product->update_meta_data( "_fastshop_hub", "-" );
-                $product->set_shipping_class_id( 3970 );
+                $product->set_shipping_class_id( $fs_ );
             }
             else
             {
@@ -311,20 +302,19 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
                 if ( $hub != "-" )
                 {
-                    $class = explode( "_", $hub )[ 2 ];
-                    switch ( $class )
+                    switch ( explode( "_", $hub )[ 2 ] )
                     {
                         case "05":
-                            $id = 4309;
+                            $id = $fs_05;
                         break;
                         case "14":
-                            $id = 4310;
+                            $id = $fs_14;
                         break;
                         case "33":
-                            $id = 4311;
+                            $id = $fs_33;
                         break;
                         default:
-                            $id = 3970;
+                            $id = $fs_;
                         break;
                     }
 
@@ -332,7 +322,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                 }
                 else
                 {
-                    $product->set_shipping_class_id( 3970 );
+                    $product->set_shipping_class_id( $fs_ );
                 }
             }
 
