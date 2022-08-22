@@ -54,7 +54,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
         // Define user set variables.
         $this->enabled            = $this->get_option( "enabled" );
         $this->title              = $this->get_option( "title" );
-        $this->shipping_class_id  = ( int ) $this->get_option( "shipping_class_id", "0" );
+        $this->shipping_class_id  = $this->get_option( "shipping_class_id", "0" );
         $this->show_delivery_time = $this->get_option( "show_delivery_time" );
         $this->additional_time    = $this->get_option( "additional_time" );
         // $this->fee                = $this->get_option( "fee" );
@@ -89,7 +89,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             ),
             "shipping_class_id"  => array(
                 "title"       => __( "Classe de entrega" ),
-                "type"        => "select",
+                "type"        => "multiselect",
                 "description" => __( "Se necessário, selecione uma classe de envio para aplicar neste método." ),
                 "desc_tip"    => true,
                 "default"     => "",
@@ -151,7 +151,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     {
         $only_selected = true;
 
-        if ( -1 === $this->shipping_class_id ) return $only_selected;
+        if ( in_array( -1, $this->shipping_class_id ) ) return $only_selected;
 
         foreach ( $package[ "contents" ] as $item_id => $values )
         {
@@ -160,7 +160,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
             if ( $qty > 0 && $product->needs_shipping() )
             {
-                if ( $this->shipping_class_id !== $product->get_shipping_class_id() )
+                if ( !in_array( $product->get_shipping_class_id(), $this->shipping_class_id ) )
                 {
                     $only_selected = false;
                     break;
@@ -286,4 +286,14 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
 		return $shipping;
 	}
+
+
+    private static function log( $title, $data )
+    {
+        $log = ( function_exists( "wc_get_logger" ) ) ? wc_get_logger() : new WC_Logger();
+
+        $log->add( "aaa_fastshop_shipping", "==================" );
+        $log->add( "aaa_fastshop_shipping", $title               );
+        $log->add( "aaa_fastshop_shipping", json_encode( $data ) );
+    }
 }
