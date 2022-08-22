@@ -199,31 +199,39 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             return;
         }
 
-        $cost = 0;
-        $time = 0;
+        $meta  = [];
+        $costs = [];
+        $time  = 0;
 
-        foreach ( $shipping[ "data" ] as $s )
+        foreach ( $shipping[ "data" ] as $data )
         {
-            $cost += $s[ "deliveryPrice" ];
-            $time  = ( $s[ "deliveryTime" ] > $time ) ? $s[ "deliveryTime" ] : $time;
+            $item         = $data[ "data" ];
+            if ( $data[ "errorCode" ] ) return;
+
+            $id           = $item[ "product_id" ];
+            $costs[ $id ] = ( float ) $item[ "deliveryPrice" ];
+            $time         = ( $item[ "deliveryTime" ] > $time ) ? $item[ "deliveryTime" ] : $time;
         }
 
         // Display delivery
-        $meta_delivery = [];
         if ( "yes" === $this->show_delivery_time )
         {
-            $meta_delivery = [
+            $meta = [
                 "_delivery_forecast" => intval( $time ) + intval( $this->additional_time ),
             ];
         }
 
+        $meta[ "price"   ] = $costs;
+        $meta[ "company" ] = "Fast Shop";
+
         // Create the rate
         $rate = [
-            "id"             => $this->id . $this->instance_id,
-            "label"          => $this->title,
-            "cost"           => (float) $cost,
-            "calc_tax"       => "per_item",
-            "meta_data"      => $meta_delivery,
+            "id"        => $this->id . $this->instance_id,
+            "label"     => $this->title,
+            "cost"      => $costs,
+            "calc_tax"  => "per_item",
+            "meta_data" => $meta,
+            "package"   => $package
         ];
 
         self::log( "calculate_shipping_rate", $rate );
@@ -247,40 +255,105 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
         self::log( "get_rate", $shipping );
 
-        $code     = $shipping[ "errorCode" ];
-
-        if ( is_null( $code ) || $code == "4001" )
+        foreach ( $shipping[ "data" ] as $sku => &$data )
         {
-            foreach ( $shipping[ "data" ] as $item )
+            $id      = wc_get_product_id_by_sku( $sku );
+            $product = wc_get_product( $id );
+            $data[ "data" ][ "product_id" ] = $id;
+
+            $code    = $data[ "code" ];
+
+            $hub    = null;
+            $class  = null;
+            $stock  = null;
+            $status = null;
+            $rPrice = null;
+            $sPrice = null;
+
+            /**
+             * fast-shop    == 3970
+             * fast-shop-05 == 4309
+             * fast-shop-14 == 4310
+             * fast-shop-33 == 4311
+             */
+
+            if ( in_array( $code, [ 4001, 4002 ] ) )
             {
-                $status  = $item[ "availableQuantity" ] ? "instock" : "outofstock";
-                $stock   = $item[ "stock" ];
-                $regular = $item[ "regular_price" ];
-                $sale    = $item[ "sale_price" ];
-                $sku     = $item[ "sku" ];
-
-                $id      = wc_get_product_id_by_sku( $sku );
-                $product = wc_get_product( $id );
-
-                $product->set_stock_quantity( $stock );
-                $product->set_regular_price( $regular );
-                $product->set_sale_price( $sale );
-                $product->set_stock_status( $status );
-                $product->save();
-            }
-        }
-        else if ( $code == "4002" )
-        {
-            foreach ( $shipping[ "data" ] as $item )
-            {
-                $sku     = $item[ "sku" ];
-                $id      = wc_get_product_id_by_sku( $sku );
-                $product = wc_get_product( $id );
-
                 $product->set_stock_quantity( 0 );
                 $product->set_stock_status( "outofstock" );
-                $product->save();
+                $product->update_meta_data( "_fastshop_hub", "-" );
+                $product->set_shipping_class_id( 3970 );
+
+                if ( isset( $item[ "regular_price" ] ) && isset( $item[ "sale_price" ] ) )
+                {
+                    $product->set_regular_price( $item[ "regular_price" ] );
+                    $product->set_sale_price( $item[ "sale_price" ] );
+                }
             }
+            else if ( $code == 4000 )
+            {
+                $item    = $data[ "data" ];
+
+                $stock   = $item[ "stock" ];
+                $product->set_stock_quantity( $stock );
+
+                $status  = ( $stock > 0 ) ? "instock" : "outofstock";
+                $product->set_stock_status( $status );
+
+                $product->update_meta_data( "_fastshop_hub", "-" );
+                $product->set_shipping_class_id( 3970 );
+
+                if ( isset( $item[ "regular_price" ] ) && isset( $item[ "sale_price" ] ) )
+                {
+                    $product->set_regular_price( $item[ "regular_price" ] );
+                    $product->set_sale_price( $item[ "sale_price" ] );
+                }
+            }
+            else
+            {
+                $item    = $data[ "data" ];
+
+                $stock   = $item[ "stock" ];
+                $product->set_stock_quantity( $stock );
+
+                $status  = ( $stock > 0 ) ? "instock" : "outofstock";
+                $product->set_stock_status( $status );
+
+                $hub     = !empty( $item[ "hub" ] ) ? $item[ "hub" ] : "-";
+                $product->update_meta_data( "_fastshop_hub", $hub );
+
+                $regular = $item[ "regular_price" ];
+                $product->set_regular_price( $regular );
+
+                $sale    = $item[ "sale_price" ];
+                $product->set_sale_price( $sale );
+
+                if ( $hub != "-" )
+                {
+                    $id    = 0;
+                    $class = explode( "_", $hub )[ 2 ];
+                    switch ( $class )
+                    {
+                        case "05":
+                            $id = 4309;
+                        break;
+                        case "14":
+                            $id = 4310;
+                        break;
+                        case "33":
+                            $id = 4311;
+                        break;
+                    }
+
+                    $product->set_shipping_class_id( $id );
+                }
+                else
+                {
+                    $product->set_shipping_class_id( 3970 );
+                }
+            }
+
+            $product->save();
         }
 
 		return $shipping;
