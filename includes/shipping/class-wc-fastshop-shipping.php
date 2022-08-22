@@ -262,13 +262,14 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             $data[ "data" ][ "product_id" ] = $id;
 
             $code    = $data[ "code" ];
+            $item    = $data[ "data" ];
 
-            $hub    = null;
-            $class  = null;
-            $stock  = null;
-            $status = null;
-            $rPrice = null;
-            $sPrice = null;
+            $hub     = null;
+            $class   = null;
+            $stock   = null;
+            $status  = null;
+            $rPrice  = null;
+            $sPrice  = null;
 
             /**
              * fast-shop    == 3970
@@ -283,17 +284,9 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                 $product->set_stock_status( "outofstock" );
                 $product->update_meta_data( "_fastshop_hub", "-" );
                 $product->set_shipping_class_id( 3970 );
-
-                if ( isset( $item[ "regular_price" ] ) && isset( $item[ "sale_price" ] ) )
-                {
-                    $product->set_regular_price( $item[ "regular_price" ] );
-                    $product->set_sale_price( $item[ "sale_price" ] );
-                }
             }
             else if ( $code == 4000 )
             {
-                $item    = $data[ "data" ];
-
                 $stock   = $item[ "stock" ];
                 $product->set_stock_quantity( $stock );
 
@@ -302,12 +295,6 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
                 $product->update_meta_data( "_fastshop_hub", "-" );
                 $product->set_shipping_class_id( 3970 );
-
-                if ( isset( $item[ "regular_price" ] ) && isset( $item[ "sale_price" ] ) )
-                {
-                    $product->set_regular_price( $item[ "regular_price" ] );
-                    $product->set_sale_price( $item[ "sale_price" ] );
-                }
             }
             else
             {
@@ -322,15 +309,8 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                 $hub     = !empty( $item[ "hub" ] ) ? $item[ "hub" ] : "-";
                 $product->update_meta_data( "_fastshop_hub", $hub );
 
-                $regular = $item[ "regular_price" ];
-                $product->set_regular_price( $regular );
-
-                $sale    = $item[ "sale_price" ];
-                $product->set_sale_price( $sale );
-
                 if ( $hub != "-" )
                 {
-                    $id    = 0;
                     $class = explode( "_", $hub )[ 2 ];
                     switch ( $class )
                     {
@@ -343,6 +323,9 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                         case "33":
                             $id = 4311;
                         break;
+                        default:
+                            $id = 3970;
+                        break;
                     }
 
                     $product->set_shipping_class_id( $id );
@@ -351,6 +334,12 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                 {
                     $product->set_shipping_class_id( 3970 );
                 }
+            }
+
+            if ( isset( $item[ "regular_price" ] ) && isset( $item[ "sale_price" ] ) )
+            {
+                $product->set_regular_price( $item[ "regular_price" ] );
+                $product->set_sale_price( $item[ "sale_price" ] );
             }
 
             $product->save();
