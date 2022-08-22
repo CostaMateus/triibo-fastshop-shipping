@@ -19,24 +19,10 @@ class WC_Triibo_Fastshop_Shipping
 	 */
 	public static function init()
 	{
-		// add_action( "init", array( __CLASS__, "load_plugin_textdomain" ), -1 );
-
         self::includes();
-
-        // if ( is_admin() )
-        // {
-        //     self::admin_includes();
-        // }
 
         add_filter( "woocommerce_shipping_methods", array( __CLASS__, "include_methods" ) );
     }
-
-	// /**
-	//  * Load the plugin text domain for translation.
-	//  */
-	// public static function load_plugin_textdomain() {
-	// 	load_plugin_textdomain( "triibo-fastshop-shipping", false, dirname( plugin_basename( WC_FASTSHOP_FRETE_PLUGIN_FILE ) ) . "/languages/" );
-	// }
 
 	/**
 	 * Includes.
@@ -89,15 +75,5 @@ class WC_Triibo_Fastshop_Shipping
 	{
 		return plugin_dir_path( WC_TRIIBO_FASTSHOP_PLUGIN_FILE );
 	}
-
-	// /**
-	//  * Get templates path.
-	//  *
-	//  * @return string
-	//  */
-	// public static function get_templates_path()
-	// {
-	// 	return self::get_plugin_path() . "templates/";
-	// }
 
 }
