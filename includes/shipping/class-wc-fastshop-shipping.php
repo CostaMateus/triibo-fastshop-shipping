@@ -343,8 +343,8 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
     {
         $log = ( function_exists( "wc_get_logger" ) ) ? wc_get_logger() : new WC_Logger();
 
-        $log->add( "aaa_fastshop_shipping", "==================" );
-        $log->add( "aaa_fastshop_shipping", $title               );
-        $log->add( "aaa_fastshop_shipping", json_encode( $data ) );
+        $log->add( "fastshop_shipping", "==================" );
+        $log->add( "fastshop_shipping", $title               );
+        $log->add( "fastshop_shipping", json_encode( $data ) );
     }
 }
