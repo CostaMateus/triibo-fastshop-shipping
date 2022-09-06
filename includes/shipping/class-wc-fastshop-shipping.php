@@ -205,9 +205,9 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
         foreach ( $shipping[ "data" ] as $data )
         {
-            $item         = $data[ "data" ];
             if ( $data[ "errorCode" ] ) return;
 
+            $item         = $data[ "data" ];
             $id           = $item[ "product_id" ];
             $costs[ $id ] = ( float ) $item[ "deliveryPrice" ];
             $time         = ( $item[ "deliveryTime" ] > $time ) ? $item[ "deliveryTime" ] : $time;
@@ -264,10 +264,10 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             $code    = $data[ "code" ];
             $item    = $data[ "data" ];
 
-            $fs_     = $api->get_env() ? 4453 : 3970;
-            $fs_05   = $api->get_env() ? 4454 : 4309;
-            $fs_14   = $api->get_env() ? 4451 : 4310;
-            $fs_33   = $api->get_env() ? 4345 : 4311;
+            $fs_     = $api->get_env( "dev" ) ? 4453 : 3970;
+            $fs_05   = $api->get_env( "dev" ) ? 4454 : 4309;
+            $fs_14   = $api->get_env( "dev" ) ? 4451 : 4310;
+            $fs_33   = $api->get_env( "dev" ) ? 4345 : 4311;
 
             if ( in_array( $code, [ 4001, 4002 ] ) )
             {
@@ -307,18 +307,21 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
                         case "05":
                             $id = $fs_05;
                         break;
+
                         case "14":
                             $id = $fs_14;
                         break;
+
                         case "33":
                             $id = $fs_33;
                         break;
+
                         default:
                             $id = $fs_;
                         break;
                     }
 
-                    $product->set_shipping_class_id( $id );
+                    $product->set_shipping_class_id( $id  );
                 }
                 else
                 {

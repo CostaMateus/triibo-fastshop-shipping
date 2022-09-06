@@ -22,19 +22,19 @@ class WC_Triibo_Webservice
     const _api_key       = "fastshopappkey-triibo-AQPPTC";           // PROD
     const _api_token     = "50083473200638420676844774754275516748"; // PROD
 
-    private $url         = null;
-
 	protected $package   = null;
 
-    private $header      = null;
+    private $url         = null;
+    private $env         = null;
     private $body        = null;
+    private $header      = null;
 
 	/**
 	 * Initialize webservice.
 	 *
 	 * @param array $package Shipping package.
 	 */
-	public function __construct( $package = array() )
+	public function __construct( $package = [] )
     {
         $_local_env    = ( strpos( home_url(), "dev-" ) !== FALSE ) ? true : false;
 
@@ -56,9 +56,9 @@ class WC_Triibo_Webservice
         $this->process_package();
 	}
 
-    public function get_env()
+    public function get_env( $is = "prod" )
     {
-        return $this->env;
+        return ( $this->env == $is ) ? true : false;
     }
 
 	/**
