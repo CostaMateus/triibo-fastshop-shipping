@@ -4,7 +4,7 @@
  * Description:          Triibo Fast Shop Frete - WooCommerce e WooCommerce-Correios
  * Author:               Mateus Costa
  * Author URI:           https://costamateus.com.br/
- * Version:              1.1.2
+ * Version:              2.0.0
  * Text Domain:          triibo-fastshop-shipping
  * WC requires at least: 3.6
  * WC tested up to:      5.8
