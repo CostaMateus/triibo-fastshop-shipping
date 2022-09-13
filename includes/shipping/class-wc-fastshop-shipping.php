@@ -234,7 +234,7 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
             "package"   => $package
         ];
 
-        self::log( "calculate_shipping_rate", $rate );
+        // self::log( "calculate_shipping_rate", $rate );
 
         // Register the rate
         $this->add_rate( $rate );
