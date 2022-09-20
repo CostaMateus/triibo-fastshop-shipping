@@ -44,8 +44,6 @@ class WC_Triibo_Webservice
 
         $this->env     = $_local_env ? "dev" : "prod";
 
-        $this->package = $package;
-
         $this->header  = [
             "Accept: application/json",
             "Content-Type: application/json",
@@ -53,7 +51,11 @@ class WC_Triibo_Webservice
             "api-token: $token",
         ];
 
-        $this->process_package();
+        if ( !empty( $package ) )
+        {
+            $this->package = $package;
+            $this->process_package();
+        }
 	}
 
     public function get_env( $is = "prod" )
@@ -117,31 +119,27 @@ class WC_Triibo_Webservice
         return json_decode( $response, TRUE );
     }
 
-    public function update_stock()
+    public function update_stock( $sku )
     {
         $ch  = curl_init();
 
-        foreach ( $this->body[ "items" ] as $item )
-        {
-            $sku = $item[ "sku" ];
+        $url = "{$this->url}/api/marketplace/wc/updatesku/$sku";
 
-            $url = $this->url . "/api/marketplace/wc/updatesku/$sku";
+        curl_setopt_array( $ch, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_ENCODING       => "",
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => "POST",
+            CURLOPT_HTTPHEADER     => $this->header,
+        ]);
 
-            curl_setopt_array( $ch, [
-                CURLOPT_URL            => $url,
-                CURLOPT_RETURNTRANSFER => TRUE,
-                CURLOPT_ENCODING       => "",
-                CURLOPT_MAXREDIRS      => 10,
-                CURLOPT_TIMEOUT        => 10,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST  => "POST",
-                CURLOPT_HTTPHEADER     => $this->header,
-            ]);
-
-            curl_exec( $ch );
-        }
-
+        $response = curl_exec( $ch );
         curl_close( $ch );
+
+        return json_decode( $response, TRUE );
     }
 }

@@ -240,7 +240,6 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
         $this->add_rate( $rate );
     }
 
-
 	/**
 	 * Get shipping rate.
 	 *
@@ -340,7 +339,6 @@ class WC_Fastshop_Shipping extends WC_Shipping_Method
 
 		return $shipping;
 	}
-
 
     private static function log( $title, $data )
     {
